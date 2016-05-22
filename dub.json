@@ -1,0 +1,12 @@
+{
+	"name": "oanda",
+	"authors": [
+		"Tomáš Chaloupka"
+	],
+	"description": "Oanda API for D language",
+	"copyright": "Copyright © 2016, Tomáš Chaloupka",
+	"license": "BSL-1.0",
+	"dependencies": {
+		"vibe-d": "~>0.7.30-alpha.1"
+	}
+}

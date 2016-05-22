@@ -1,0 +1,12 @@
+{
+	"name": "basics",
+	"authors": [
+		"Tomáš Chaloupka"
+	],
+	"description": "Basic usage of Oanda API",
+	"copyright": "Copyright © 2016, Tomáš Chaloupka",
+	"license": "BSL-1.0",
+	"dependencies": {
+		"oanda": {"path": "../../"}
+	}
+}
