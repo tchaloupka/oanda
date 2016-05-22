@@ -4,214 +4,15 @@ import vibe.data.json;
 import vibe.data.serialization;
 import std.typecons;
 
-alias string AccountID;
-alias string TransactionID;
-alias string Currency;
-alias string AccountUnits;
-alias string DecimalNumber;
-alias string SysTime; // TODO: Use SysTime from std.datetime - https://issues.dlang.org/show_bug.cgi?id=16053
-alias string TradeID;
-alias string InstrumentName;
-alias string PriceValue;
-alias string ClientID;
-alias string ClientTag;
-alias string ClientComment;
-alias string OrderID;
-alias string UserSpecifier;
+import oanda.definitions;
 
+/// Environment the client comunicate with
 enum Environment
 {
+	/// Practice account
 	fxpractice,
+	/// Trade account
 	fxtrade
-}
-
-enum TradeState
-{
-	open,
-	closed
-}
-
-enum OrderState
-{
-	pending,
-	filled,
-	triggered,
-	cancelled
-}
-
-/// The type of an Instrument.
-enum InstrumentType
-{
-	unknown, /// Unknown
-	currency, /// Currency
-	index, /// Index
-	bond, /// Bond
-	commodity, /// Commodity
-	test, /// Test
-	basket, /// Basket
-	cfd, /// Contract For Difference
-	metal /// Metal
-}
-
-//TODO - solve the naming problem with non-tradeable
-///// The status of the Price.
-//enum PriceStatus
-//{
-//	tradeable, /// The Instrument’s price is tradeable.
-//	nontradeable, /// The Instrument’s price is not tradeable.
-//	invalid /// The Instrument of the price is invalid or there is no valid Price for the Instrument.)
-//}
-alias string PriceStatus;
-
-template UpperCasePolicy(S)
-{
-	import std.conv, std.string : toLower, toUpper;
-
-	S fromRepresentation(string value)
-	{
-		return value.toLower.to!S;
-	}
-
-	string toRepresentation(S value)
-	{
-		return to!string(value).toUpper;
-	}
-}
-
-struct AccountProperties
-{
-	AccountID id;
-	@optional int mt4AccountID;
-	string[] tags;
-}
-
-struct ClientExtensions
-{
-	ClientID id;
-	ClientTag tag;
-	ClientComment comment;
-}
-
-struct TradeSummary
-{
-	TradeID id;
-	InstrumentName instrument;
-	PriceValue price;
-	SysTime openTime;
-	TradeState state;
-	DecimalNumber initialUnits;
-	DecimalNumber currentUnits;
-	AccountUnits realizedPL;
-	AccountUnits unrealizedPL;
-	TransactionID[] closingTransactionIDs;
-	AccountUnits financing;
-	SysTime closeTime;
-	ClientExtensions clientExtensions;
-	OrderID takeProfitOrderID;
-	OrderID stopLossOrderID;
-	OrderID trailingStopLossOrderID;
-}
-
-struct PositionSide
-{
-	DecimalNumber units;
-	PriceValue averagePrice;
-	TradeID[] tradeIDs;
-	AccountUnits pl;
-	AccountUnits unrealizedPL;
-	AccountUnits resettablePL;
-}
-
-struct Position
-{
-	InstrumentName instrument;
-	AccountUnits pl;
-	AccountUnits unrealizedPL;
-	AccountUnits resettablePL;
-	@name("long") PositionSide long_;
-	@name("short") PositionSide short_;
-}
-
-//TODO: Implement Order specializations http://developer.oanda.com/rest-live-v20/orders-df/#Order
-struct Order
-{
-	OrderID id;
-	SysTime createTime;
-	OrderState state;
-	ClientExtensions clientExtensions;
-}
-
-mixin template AccountSummaryTemplate()
-{
-	AccountID id;
-	@optional @name("alias") string alias_;
-	Currency currency;
-	AccountUnits balance;
-	int createdByUserID;
-	SysTime createdTime;
-	AccountUnits pl;
-	@optional AccountUnits resettabledPL;
-	@optional SysTime resettabledPLTime;
-	DecimalNumber marginRate;
-	@optional SysTime marginCallEnterTime;
-	@optional int marginCallExtensionCount;
-	@optional SysTime lastMarginCallExtensionTime;
-	int openTradeCount;
-	int openPositionCount;
-	int pendingOrderCount;
-	bool hedgingEnabled;
-	AccountUnits unrealizedPL;
-	@name("NAV") AccountUnits nav;
-	AccountUnits marginUsed;
-	AccountUnits marginAvailable;
-	AccountUnits positionValue;
-	AccountUnits marginCloseoutUnrealizedPL;
-	AccountUnits marginCloseoutNAV;
-	AccountUnits marginCloseoutMarginUsed;
-	DecimalNumber marginCloseoutPercent;
-	AccountUnits withdrawalLimit;
-	TransactionID lastTransactionID;
-}
-
-struct AccountSummary
-{
-	mixin AccountSummaryTemplate;
-}
-
-struct Account
-{
-	mixin AccountSummaryTemplate;
-
-	TradeSummary[] trades;
-	Position[] positions;
-	Order[] orders;
-}
-
-/// Full specification of an Instrument.
-struct Instrument
-{
-	InstrumentName name;
-	@byName!UpperCasePolicy InstrumentType type;
-	string displayName;
-	int pipLocation;
-	int displayPrecision;
-	int tradeUnitsPrecision;
-	DecimalNumber minimumTradeSize;
-	DecimalNumber maximumTrailingStopDistance;
-	DecimalNumber minimumTrailingStopDistance;
-	DecimalNumber maximumPositionSize;
-	DecimalNumber maximumOrderUnits;
-	DecimalNumber marginRate;
-}
-
-struct AccountChanges
-{
-	//TODO
-}
-
-struct AccountState
-{
-	//TODO
 }
 
 struct AccountChangesResponse
@@ -221,72 +22,29 @@ struct AccountChangesResponse
 	TransactionID lastTransactionID;
 }
 
-/// Price Bucket
-struct PriceBucket
+/// Response of Account details function
+struct AccountDetailsResponse
 {
-	PriceValue price; /// The Price offered by the PriceBucket
-	int liquidity; /// The amount of liquidity offered by the PriceBucket
+	/// The full details of the requested Account.
+	Account account;
+	/// The ID of the most recent Transaction created for the Account.
+	TransactionID lastTransactionID;
 }
 
-/**
- * QuoteHomeConversionFactors represents the factors that can be used used to convert quantities
- * of a Price’s Instrument’s quote currency into the Account’s home currency.
- */
-struct QuoteHomeConversionFactors
+/// Response of Account summary function
+struct AccountSummaryResponse
 {
-	/**
-	 * The factor used to convert a positive amount of the Price’s Instrument’s quote currency into a positive
-	 * amount of the Account’s home currency. Conversion is performed by multiplying the quote units by the conversion factor.
-	 */
-	DecimalNumber positiveUnits;
-	/**
-	 * The factor used to convert a negative amount of the Price’s Instrument’s quote currency into a negative
-	 * amount of the Account’s home currency. Conversion is performed by multiplying the quote units by the conversion factor.
-	 */
-	DecimalNumber negativeUnits;
+	/// The summary of the requested Account.
+	AccountSummary account;
+	/// The ID of the most recent Transaction created for the Account.
+	TransactionID lastTransactionID;
 }
 
-/// Representation of how many units of an Instrument are available to be traded by an Order depending on its postionFill option.
-struct UnitsAvailableDetails
+/// Response of Configure account function
+struct ConfigureAccountResponse
 {
-	/**
-	 * The number of units that are available to be traded using an Order with a positionFill option
-	 * of “DEFAULT”. For an Account with hedging enabled, this value will be the same as the “OPEN_ONLY” value.
-	 * For an Account without hedging enabled, this value will be the same as the “REDUCE_FIRST” value.
-	 */
-	@name("default") UnitsAvailable default_;
-	/**
-	 * The number of units that may are available to be traded with an Order with a positionFill option of “REDUCE_FIRST”.
-	 */
-	UnitsAvailable reduceFirst;
-	/**
-	 * The number of units that may are available to be traded with an Order with a positionFill option of “REDUCE_ONLY”.
-	 */
-	UnitsAvailable reduceOnly;
-	/**
-	 * The number of units that may are available to be traded with an Order with a positionFill option of “OPEN_ONLY”.
-	 */
-	UnitsAvailable openOnly;
-}
-
-/// Representation of many units of an Instrument are available to be traded for both long and short Orders.
-struct UnitsAvailable
-{
-	@name("long") DecimalNumber long_; /// The units available breakdown for long Orders.
-	@name("short") DecimalNumber short_; /// The units available breakdown for short Orders.
-}
-
-struct Price
-{
-	InstrumentName instrument;
-	SysTime time;
-	@byName PriceStatus status;
-	PriceBucket[] bids;
-	PriceBucket[] asks;
-	PriceValue closeoutBid;
-	PriceValue closeoutAsk;
-	QuoteHomeConversionFactors quoteHomeConversionFactors;
-	UnitsAvailableDetails unitsAvailable;
+	ClientConfigureTransaction configureTransaction;
+	TransactionID lastTransactionID;
 }
 
 struct OandaClient(Environment env)
@@ -304,18 +62,6 @@ struct OandaClient(Environment env)
 
 	this(string accessToken)
 	{
-		struct Test {
-			InstrumentType color;
-		}
-		
-		Test test = {InstrumentType.currency};
-		
-		assert(test.serializeWithPolicy!(JsonStringSerializer, UpperCasePolicy)
-			== `{"color":"CURRENCY"}`);
-		assert(`{"color": "INDEX"}`
-			.deserializeWithPolicy!(JsonStringSerializer, UpperCasePolicy, Test)
-			== Test(InstrumentType.index));
-
 		this.accessToken = accessToken;
 	}
 
@@ -329,23 +75,58 @@ struct OandaClient(Environment env)
 
 	/* ---------- ACOUNTS ------------*/
 
+	/**
+	 * Get a list of all Accounts authorized for the provided token.
+	 * 
+	 * Returns:
+	 * 		The list of Accounts the client is authorized to access and their associated properties.
+	 */
 	auto listAccounts()
 	{
 		return deserializeJson!(AccountProperties[])(request(accountsURL)["accounts"]);
 	}
 
+	/**
+	 * Get the full details for a single Account that a client has access to.
+	 * Full pending Order, open Trade and open Position representations are provided.
+	 * 
+	 * Params:
+	 * 		accountId - ID of the Account to fetch
+	 * 
+	 * Returns:
+	 * 		The full details of the requested Account.
+	 */
 	auto accountDetails(AccountID accountId)
 	{
 		auto res = request(accountsURL ~ "/" ~ accountId);
-		return deserializeJson!(Account)(res["account"]);
+		return deserializeJson!(AccountDetailsResponse)(res);
 	}
 
+	/**
+	 * Get a summary for a single Account that a client has access to.
+	 * 
+	 * Params:
+	 * 		accountId - ID of the Account to fetch
+	 * 
+	 * Returns:
+	 * 		The summary of the requested Account.
+	 */
 	auto accountSummary(AccountID accountId)
 	{
 		auto res = request(accountsURL ~ "/" ~ accountId ~ "/summary");
-		return deserializeJson!(AccountSummary)(res["account"]);
+		return deserializeJson!(AccountSummaryResponse)(res);
 	}
 
+	/**
+	 * Get the list of tradeable instruments for the given Account.
+	 * 
+	 * Params:
+	 * 		accountId - ID of the Account to fetch
+	 * 		instruments - List of instruments to query specifically.
+	 * 
+	 * Returns:
+	 * 		The requested list of instruments.
+	 */
 	auto accountInstruments(AccountID accountId, InstrumentName[] instruments ...)
 	{
 		//TODO: Query specific instruments
@@ -354,7 +135,18 @@ struct OandaClient(Environment env)
 		//return res["instruments"].deserializeWithPolicy!(JsonSerializer, UpperCasePolicy, Instrument[]);
 	}
 
-	auto configureAccount(string alias_, DecimalNumber marginRate)
+	/**
+	 * Set the client-configurable portions of an Account.
+	 * 
+	 * Params:
+	 * 		accountID - ID of the Account to configure
+	 * 		alias - account alias
+	 * 		marginRate - The string representation of a decimal number.
+	 * 
+	 * Returns:
+	 * 		The transaction that configures the Account.
+	 */
+	auto configureAccount(AccountID accountId, string alias_, DecimalNumber marginRate)
 	{
 		//TODO: Not implemented
 	}
