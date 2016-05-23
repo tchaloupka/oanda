@@ -3,6 +3,7 @@ module oanda.client;
 debug import std.stdio;
 import std.typecons;
 import std.range;
+import std.traits;
 import vibe.http.client;
 import vibe.data.json;
 import vibe.data.serialization;
@@ -45,11 +46,11 @@ package:
 		Json data;
 		int status;
 
-		static if (is(T == string))
+		static if (is(Unqual!T == string))
 		{
 			string url = joiner([_apiUrl, path]).text;
 		}
-		else static if (isInputRange!T && isInputRange!(ElementType!T))
+		else static if (isInputRange!T && isInputRange!(Unqual!(ElementType!T)))
 		{
 			string url = joiner(chain([_apiUrl], path)).text;
 		}

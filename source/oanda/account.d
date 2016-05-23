@@ -52,10 +52,10 @@ struct ConfigureAccountResponse
 
 /**
  * Get a list of all Accounts authorized for the provided token.
- * 
+ *
  * Params:
  * 		client = oanda client
- * 
+ *
  * Returns:
  * 		The list of Accounts the client is authorized to access and their associated properties.
  */
@@ -68,11 +68,11 @@ auto listAccounts(ref in OandaClient client)
 /**
  * Get the full details for a single Account that a client has access to.
  * Full pending Order, open Trade and open Position representations are provided.
- * 
+ *
  * Params:
  * 		client    = oanda client
  * 		accountId = ID of the Account to fetch
- * 
+ *
  * Returns:
  * 		The full details of the requested Account.
  */
@@ -82,28 +82,29 @@ auto accountDetails(ref in OandaClient client, AccountID accountId)
 	return deserializeJson!(AccountDetailsResponse)(res);
 }
 
-///**
-// * Get a summary for a single Account that a client has access to.
-// * 
-// * Params:
-// * 		accountId = ID of the Account to fetch
-// * 
-// * Returns:
-// * 		The summary of the requested Account.
-// */
-//auto accountSummary(AccountID accountId)
-//{
-//	auto res = request(accountsURL ~ "/" ~ accountId ~ "/summary");
-//	return deserializeJson!(AccountSummaryResponse)(res);
-//}
-//
+/**
+ * Get a summary for a single Account that a client has access to.
+ *
+ * Params:
+ * 		client    = oanda client
+ * 		accountId = ID of the Account to fetch
+ *
+ * Returns:
+ * 		The summary of the requested Account.
+ */
+auto accountSummary(ref in OandaClient client, AccountID accountId)
+{
+	auto res = client.requestJson(["/v3/accounts/", accountId, "/summary"]);
+	return deserializeJson!(AccountSummaryResponse)(res);
+}
+
 ///**
 // * Get the list of tradeable instruments for the given Account.
-// * 
+// *
 // * Params:
 // * 		accountId   = ID of the Account to fetch
 // * 		instruments = List of instruments to query specifically.
-// * 
+// *
 // * Returns:
 // * 		The requested list of instruments.
 // */
@@ -117,12 +118,12 @@ auto accountDetails(ref in OandaClient client, AccountID accountId)
 //
 ///**
 // * Set the client-configurable portions of an Account.
-// * 
+// *
 // * Params:
 // * 		accountID  = ID of the Account to configure
 // * 		alias      = account alias
 // * 		marginRate = The string representation of a decimal number.
-// * 
+// *
 // * Returns:
 // * 		The transaction that configures the Account.
 // */
