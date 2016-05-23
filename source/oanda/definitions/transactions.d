@@ -790,59 +790,117 @@ enum OrderCancelReason
 	positionSizeExceeded
 }
 
+/// An OrderCancelTransaction represents the cancellation of an Order in the client’s Account.
 struct OrderCancelTransaction
 {
-	//TODO
+	/// The ID of the Order cancelled
+	OrderID orderID;
+	/// The client ID of the Order cancelled (only provided if the Order has a client Order ID).
+	@optional ClientID clientOrderID;
+	/// The reason that the Order was cancelled.
+	OrderCancelReason reason;
+	/// The ID of the Order that replaced this Order (only provided if this Order was cancelled for replacement).
+	OrderID replacedByOrderID;
 }
 
+/// An OrderCancelRejectTransaction represents the rejection of the cancellation of an Order in the client’s Account.
 struct OrderCancelRejectTransaction
 {
-	//TODO
+	/// The ID of the Order intended to be cancelled
+	OrderID orderID;
+	/// The client ID of the Order intended to be cancelled (only provided if the Order has a client Order ID).
+	@optional ClientID clientOrderID;
+	/// The reason that the Order was to be cancelled.
+	OrderCancelReason reason;
+	/// The reason that the Reject Transaction was created
+	string rejectReason;
 }
 
+/// A OrderClientExtensionsModifyTransaction represents the modification of an Order’s Client Extensions.
 struct OrderClientExtensionsModifyTransaction
 {
-	//TODO
+	/// The ID of the Order who’s client extensions are to be modified.
+	OrderID orderID;
+	/// The original Client ID of the Order who’s client extensions are to be modified.
+	ClientID clientOrderID;
+	/// The new Client Extensions for the Order.
+	ClientExtensions orderClientExtensionsModify;
+	/// The new Client Extensions for the Order’s Trade on fill.
+	ClientExtensions tradeClientExtensionsModify;
 }
 
+/// A OrderClientExtensionsModifyRejectTransaction represents the rejection of the modification of an Order’s Client Extensions.
 struct OrderClientExtensionsModifyRejectTransaction
 {
-	//TODO
+	/// The ID of the Order who’s client extensions are to be modified.
+	OrderID orderID;
+	/// The original Client ID of the Order who’s client extensions are to be modified.
+	ClientID clientOrderID;
+	/// The new Client Extensions for the Order.
+	ClientExtensions orderClientExtensionsModify;
+	/// The new Client Extensions for the Order’s Trade on fill.
+	ClientExtensions tradeClientExtensionsModify;
+	/// The reason that the Reject Transaction was created
+	string rejectReason;
 }
 
+/// A TradeClientExtensionsModifyTransaction represents the modification of a Trade’s Client Extensions.
 struct TradeClientExtensionsModifyTransaction
 {
-	//TODO
+	/// The ID of the Trade who’s client extensions are to be modified.
+	TradeID tradeID;
+	/// The original Client ID of the Trade who’s client extensions are to be modified.
+	ClientID clientTradeID;
+	/// The new Client Extensions for the Trade.
+	ClientExtensions tradeClientExtensionsModify;
 }
 
+/// A TradeClientExtensionsModifyRejectTransaction represents the rejection of the modification of a Trade’s Client Extensions.
 struct TradeClientExtensionsModifyRejectTransaction
 {
-	//TODO
+	/// The ID of the Trade who’s client extensions are to be modified.
+	TradeID tradeID;
+	/// The original Client ID of the Trade who’s client extensions are to be modified.
+	ClientID clientTradeID;
+	/// The new Client Extensions for the Trade.
+	ClientExtensions tradeClientExtensionsModify;
+	/// The reason that the Reject Transaction was created
+	string rejectReason;
 }
 
+/// A MarginCallEnterTransaction is created when an Account enters the margin call state.
 struct MarginCallEnterTransaction
 {
-	//TODO
 }
 
+/// A MarginCallEnterTransaction is created when an Account enters the margin call state.
 struct MarginCallExtendTransaction
 {
-	//TODO
+	/// The number of the extensions to the Account’s current margin call that have been applied. This value will be set to 1 for the first MarginCallExtend Transaction
+	int extensionNumber;
 }
 
+/// A MarginCallExitnterTransaction is created when an Account leaves the margin call state.
 struct MarginCallExitTransaction
 {
-	//TODO
 }
 
+/// A DailyFinancingTransaction represents the daily payment/collection of financing for an Account.
 struct DailyFinancingTransaction
 {
-	//TODO
+	/// The amount of financing paid/collected for the Account.
+	AccountUnits financing;
+	/// The Account’s balance after daily financing.
+	AccountUnits accountBalance;
+	/// The account financing mode at the time of the daily financing.
+	AccountFinancingMode accountFinancingMode;
+	/// The financing paid/collected for each Position in the Account.
+	PositionFinancing[] positionFinancings;
 }
 
+/// A ResetResettablePLTransaction represents the resetting of the Account’s resettable PL counters.
 struct ResetResettablePLTransaction
 {
-	//TODO
 }
 
 /// A client-provided identifier, used by clients to refer to their Orders or Trades with an identifier that they have provided.
